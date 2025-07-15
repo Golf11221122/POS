@@ -83,15 +83,71 @@
       left: 50%;
       transform: translate(-50%, -50%);
       background: white;
-      padding: 20px;
-      border-radius: 15px;
+      border-radius: 20px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
       display: none;
       z-index: 1000;
+      width: 320px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    #popup-header {
+      background: linear-gradient(to right, #FFA500, #FFFFFF);
+      padding: 15px;
+      font-size: 1.5rem;
+      color: #002366;
+      font-weight: bold;
+    }
+
+    #customerCount {
+      font-size: 2rem;
+      margin: 20px 0;
+      letter-spacing: 10px;
+      min-height: 40px;
+    }
+
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 10px 20px;
+    }
+
+    .keypad button {
+      padding: 20px;
+      font-size: 1.5rem;
+      border-radius: 15px;
+      border: none;
+      background: #f0f0f0;
+      color: #002366;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .keypad button:hover {
+      background: #fff;
+    }
+
+    #startOrderBtn {
+      width: 100%;
+      background: linear-gradient(to right, #ccffcc, #ffffff);
+      color: orange;
+      border: none;
+      border-radius: 0 0 20px 20px;
+      padding: 15px;
+      font-size: 1.3rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #startOrderBtn:hover {
+      background: linear-gradient(to right, #b3ffb3, #ffffff);
     }
   </style>
 </head>
 <body>
+
   <h1>กรุณาเลือกโต๊ะ</h1>
 
   <div class="table-grid" id="tableContainer"></div>
@@ -101,15 +157,33 @@
     <button onclick="goBack()">Back</button>
   </div>
 
+  <!-- POPUP -->
   <div id="popup">
-    <h3 style="color: #002366; margin-top: 0;">จำนวนลูกค้า</h3>
-    <input type="number" placeholder="กรอกจำนวน..." style="padding:10px; width: 100%; font-size: 1.2rem;" />
-    <br><br>
-    <button onclick="startOrder()" style="background: linear-gradient(to right, #ccffcc, #ffffff); color: orange; font-weight: bold; padding:10px 20px; border:none; border-radius: 8px;">เริ่มสั่งอาหาร +</button>
+    <div id="popup-header">จำนวนลูกค้า</div>
+    <div id="customerCount"></div>
+    <div class="keypad">
+      <button onclick="appendDigit('1')">1</button>
+      <button onclick="appendDigit('2')">2</button>
+      <button onclick="appendDigit('3')">3</button>
+      <button onclick="appendDigit('4')">4</button>
+      <button onclick="appendDigit('5')">5</button>
+      <button onclick="appendDigit('6')">6</button>
+      <button onclick="appendDigit('7')">7</button>
+      <button onclick="appendDigit('8')">8</button>
+      <button onclick="appendDigit('9')">9</button>
+      <button onclick="clearCount()">ยกเลิก</button>
+      <button onclick="appendDigit('0')">0</button>
+      <button onclick="backspace()">X</button>
+    </div>
+    <button id="startOrderBtn" onclick="startOrder()">เริ่มสั่งอาหาร +</button>
   </div>
 
   <script>
+    let selectedTable = "";
+    let customerCount = "";
+
     const tableContainer = document.getElementById("tableContainer");
+    const customerCountEl = document.getElementById("customerCount");
     const popup = document.getElementById("popup");
 
     function renderTables() {
@@ -120,13 +194,41 @@
         btn.onclick = function () {
           document.querySelectorAll('.table-button').forEach(b => b.classList.remove('selected'));
           btn.classList.add('selected');
+          selectedTable = i;
+          customerCount = "";
+          customerCountEl.innerText = "";
           popup.style.display = 'block';
         };
         tableContainer.appendChild(btn);
       }
     }
 
-    renderTables();
+    function appendDigit(digit) {
+      if (customerCount.length < 3) {
+        customerCount += digit;
+        customerCountEl.innerText = customerCount;
+      }
+    }
+
+    function backspace() {
+      customerCount = customerCount.slice(0, -1);
+      customerCountEl.innerText = customerCount;
+    }
+
+    function clearCount() {
+      customerCount = "";
+      customerCountEl.innerText = "";
+    }
+
+    function startOrder() {
+      if (customerCount === "") {
+        alert("กรุณากรอกจำนวนลูกค้า");
+        return;
+      }
+      popup.style.display = "none";
+      alert(`โต๊ะ ${selectedTable}, จำนวนลูกค้า: ${customerCount} → ไปหน้าเมนู`);
+      // window.location.href = "menu.html";
+    }
 
     function goHome() {
       window.location.href = "index.html";
@@ -134,13 +236,6 @@
 
     function goBack() {
       window.history.back();
-    }
-
-    function startOrder() {
-      popup.style.display = 'none';
-      // ไปหน้าเมนูได้ที่นี่
-      // window.location.href = "menu.html";
-      alert("ไปหน้าเมนูได้ที่นี่");
     }
 
     // กลับหน้าแรกถ้าไม่มีการใช้งาน 5 นาที
@@ -152,9 +247,13 @@
       }, 5 * 60 * 1000);
     }
 
-    window.onload = resetTimer;
+    window.onload = () => {
+      resetTimer();
+      renderTables();
+    };
     window.onmousemove = resetTimer;
     window.onkeydown = resetTimer;
   </script>
+
 </body>
 </html>
