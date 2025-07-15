@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>เลือกโต๊ะ</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #FFA500, #FFFFFF);
+      color: #002366;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      height: 100vh;
+    }
+
+    h1 {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: linear-gradient(to right, #FFA500, #FFFFFF);
+      color: #002366;
+      border-radius: 10px;
+      font-size: 2rem;
+    }
+
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 20px;
+      padding: 30px;
+      width: 100%;
+      max-width: 800px;
+      justify-items: center;
+    }
+
+    .table-button {
+      background-color: #eee;
+      color: #002366;
+      border: 2px solid #ccc;
+      border-radius: 20px;
+      width: 120px;
+      height: 120px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .table-button.selected {
+      background-color: orange;
+      color: white;
+      border-color: darkorange;
+    }
+
+    .footer-buttons {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+
+    .footer-buttons button {
+      padding: 14px 24px;
+      font-size: 1.2rem;
+      border-radius: 10px;
+      border: none;
+      background-color: #ffffffcc;
+      color: #002366;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+
+    #popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <h1>กรุณาเลือกโต๊ะ</h1>
+
+  <div class="table-grid" id="tableContainer"></div>
+
+  <div class="footer-buttons">
+    <button onclick="goHome()">Back to Home Page</button>
+    <button onclick="goBack()">Back</button>
+  </div>
+
+  <div id="popup">
+    <h3 style="color: #002366; margin-top: 0;">จำนวนลูกค้า</h3>
+    <input type="number" placeholder="กรอกจำนวน..." style="padding:10px; width: 100%; font-size: 1.2rem;" />
+    <br><br>
+    <button onclick="startOrder()" style="background: linear-gradient(to right, #ccffcc, #ffffff); color: orange; font-weight: bold; padding:10px 20px; border:none; border-radius: 8px;">เริ่มสั่งอาหาร +</button>
+  </div>
+
+  <script>
+    const tableContainer = document.getElementById("tableContainer");
+    const popup = document.getElementById("popup");
+
+    function renderTables() {
+      for (let i = 1; i <= 15; i++) {
+        const btn = document.createElement("button");
+        btn.className = "table-button";
+        btn.innerText = `โต๊ะ ${i}`;
+        btn.onclick = function () {
+          document.querySelectorAll('.table-button').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          popup.style.display = 'block';
+        };
+        tableContainer.appendChild(btn);
+      }
+    }
+
+    renderTables();
+
+    function goHome() {
+      window.location.href = "index.html";
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+
+    function startOrder() {
+      popup.style.display = 'none';
+      // ไปหน้าเมนูได้ที่นี่
+      // window.location.href = "menu.html";
+      alert("ไปหน้าเมนูได้ที่นี่");
+    }
+
+    // กลับหน้าแรกถ้าไม่มีการใช้งาน 5 นาที
+    let timeout;
+    function resetTimer() {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        window.location.href = "index.html";
+      }, 5 * 60 * 1000);
+    }
+
+    window.onload = resetTimer;
+    window.onmousemove = resetTimer;
+    window.onkeydown = resetTimer;
+  </script>
+</body>
+</html>
