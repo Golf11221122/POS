@@ -60,6 +60,77 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       cursor: pointer;
     }
+
+    /* Pop-up */
+    #popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 350px;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+    #popupHeader {
+      background: linear-gradient(to right, #FFA500, #FFFFFF);
+      padding: 15px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #002366;
+      text-align: center;
+    }
+
+    #popupDisplay {
+      font-size: 2rem;
+      letter-spacing: 10px;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .popup-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 15px;
+    }
+
+    .popup-grid button {
+      padding: 15px;
+      font-size: 1.3rem;
+      border: none;
+      border-radius: 12px;
+      background-color: #ffffffcc;
+      color: #002366;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+
+    .popup-grid button:hover {
+      background-color: #fff;
+    }
+
+    #popupFooter {
+      background: linear-gradient(to right, #ccffcc, #ffffff);
+      text-align: center;
+    }
+
+    #popupFooter button {
+      width: 100%;
+      padding: 15px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: orange;
+      border: none;
+      border-radius: 0 0 20px 20px;
+      background: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -68,17 +139,17 @@
   <button class="button" onclick="goToTable()">ทานที่ร้าน</button>
   <button class="button" onclick="openPopup()">กลับบ้าน</button>
 
-  <!-- ปุ่มกลับ -->
+  <!-- Footer Buttons -->
   <div class="footer-buttons">
     <button onclick="goHome()">Back to Home Page</button>
     <button onclick="goBack()">Back</button>
   </div>
 
-  <!-- Pop-up สำหรับกลับบ้าน -->
-  <div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; border-radius:20px; width:320px; box-shadow:0 4px 20px rgba(0,0,0,0.3); z-index:1000;">
-    <div style="background:linear-gradient(to right, #FFA500, #FFFFFF); padding:15px; font-size:1.5rem; color:#002366; font-weight:bold;">จำนวนลูกค้า</div>
-    <div id="customerCount" style="font-size:2rem; margin:20px 0; text-align:center; letter-spacing:10px;"></div>
-    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:10px 20px;">
+  <!-- Pop-up -->
+  <div id="popup">
+    <div id="popupHeader">จำนวนลูกค้า</div>
+    <div id="popupDisplay"></div>
+    <div class="popup-grid">
       <button onclick="appendDigit('1')">1</button>
       <button onclick="appendDigit('2')">2</button>
       <button onclick="appendDigit('3')">3</button>
@@ -92,7 +163,9 @@
       <button onclick="appendDigit('0')">0</button>
       <button onclick="backspace()">X</button>
     </div>
-    <button onclick="startOrder()" style="width:100%; background:linear-gradient(to right, #ccffcc, #ffffff); color:orange; border:none; border-radius:0 0 20px 20px; padding:15px; font-size:1.3rem; font-weight:bold;">เริ่มสั่งอาหาร +</button>
+    <div id="popupFooter">
+      <button onclick="startOrder()">เริ่มสั่งอาหาร +</button>
+    </div>
   </div>
 
   <script>
@@ -104,25 +177,25 @@
 
     function openPopup() {
       customerCount = "";
-      document.getElementById("customerCount").innerText = "";
+      document.getElementById("popupDisplay").innerText = "";
       document.getElementById("popup").style.display = "block";
     }
 
     function appendDigit(d) {
       if (customerCount.length < 3) {
         customerCount += d;
-        document.getElementById("customerCount").innerText = customerCount;
+        document.getElementById("popupDisplay").innerText = customerCount;
       }
     }
 
     function clearCount() {
       customerCount = "";
-      document.getElementById("customerCount").innerText = "";
+      document.getElementById("popupDisplay").innerText = "";
     }
 
     function backspace() {
       customerCount = customerCount.slice(0, -1);
-      document.getElementById("customerCount").innerText = customerCount;
+      document.getElementById("popupDisplay").innerText = customerCount;
     }
 
     function startOrder() {
@@ -131,8 +204,8 @@
         return;
       }
       document.getElementById("popup").style.display = "none";
-      alert(`กลับบ้าน - จำนวนลูกค้า: ${customerCount}`);
-      // window.location.href = "menu.html";
+      alert(`กลับบ้าน - ลูกค้า: ${customerCount}`);
+      // window.location.href = "some-page.html";
     }
 
     function goHome() {
@@ -143,7 +216,7 @@
       window.history.back();
     }
 
-    // กลับหน้าแรกหากไม่มีการใช้งาน 5 นาที
+    // นับเวลาถอยหลัง 5 นาที
     let timeout;
     function resetTimer() {
       clearTimeout(timeout);
