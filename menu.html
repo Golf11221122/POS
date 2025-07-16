@@ -198,14 +198,13 @@
       document.getElementById("popupDisplay").innerText = customerCount;
     }
 
-    function startOrder() {
+      function startOrder() {
       if (customerCount === "") {
         alert("กรุณากรอกจำนวนลูกค้า");
         return;
       }
       document.getElementById("popup").style.display = "none";
-      alert(`กลับบ้าน - ลูกค้า: ${customerCount}`);
-      // window.location.href = "some-page.html";
+      window.location.href = "Ordermenu.html";
     }
 
     function goHome() {
