@@ -1,3 +1,4 @@
+<!-- วางในตำแหน่งเดิมแทนของเก่าได้เลย -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -58,16 +59,62 @@
     .order-item {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
     }
 
     .order-item button {
-      margin: 0 5px;
+      margin: 0 2px;
+      font-size: 0.6rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: none;
+      background: #ffa50066;
+      cursor: pointer;
+    }
+
+    .discount-display {
+      margin: 8px 0;
+      background: #fff4cc;
+      padding: 6px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .discount-display button {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      background: #f88;
+      color: #000;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .discount-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+
+    .discount-buttons button {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border: none;
+      border-radius: 10px;
+      background: #fff4cc;
+      cursor: pointer;
+      box-shadow: 1px 1px 3px #bbb;
     }
 
     .summary-total {
-      margin-top: 15px;
+      margin-top: 12px;
       font-weight: bold;
+      font-size: 1rem;
     }
 
     .menu-grid {
@@ -98,6 +145,32 @@
       color: #999;
       font-size: 0.9rem;
     }
+
+    .order-summary button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .order-summary button.submit-btn {
+      background: linear-gradient(to right, #FFA500, #FFD580);
+      color: #002366;
+    }
+
+    .order-summary button.cancel-btn {
+      background: linear-gradient(to right, #eee, #ccc);
+      color: #444;
+    }
+
+    .order-summary button:hover {
+      transform: scale(1.03);
+    }
   </style>
 </head>
 <body>
@@ -113,9 +186,19 @@
     <div class="order-summary" id="orderSummary" style="display: none;">
       <h3>รายการสั่งซื้อ</h3>
       <div id="orderItems"></div>
+
+      <div class="discount-buttons">
+        <button onclick="applyDiscount(5)">5%</button>
+        <button onclick="applyDiscount(10)">10%</button>
+        <button onclick="applyDiscount(15)">15%</button>
+        <button onclick="applyDiscount(20)">20%</button>
+      </div>
+
+      <div id="discountDisplay"></div>
+
       <div class="summary-total" id="totalSummary"></div>
-      <button onclick="submitOrder()">✅ ยืนยันคำสั่งซื้อ</button>
-      <button onclick="cancelOrder()">❌ ยกเลิก</button>
+      <button class="submit-btn" onclick="submitOrder()">✅ ยืนยันคำสั่งซื้อ</button>
+      <button class="cancel-btn" onclick="cancelOrder()">❌ ยกเลิก</button>
     </div>
 
     <div class="menu-grid" id="menuGrid">กำลังโหลดเมนู...</div>
@@ -123,6 +206,7 @@
 
   <script>
     let order = {};
+    let discountPercent = 0;
     let startTime = new Date();
 
     fetch("https://script.google.com/macros/s/AKfycbwvYTBu1lZ-IukUtsg2ylzALbEEoYARxjgyWh7VmTDP9lTXhs6Axv7uNcRIE3DCGjaQ/exec")
@@ -171,13 +255,38 @@
       updateSummary();
     }
 
+    function changeQty(name, change) {
+      order[name].quantity += change;
+      if (order[name].quantity <= 0) {
+        delete order[name];
+      }
+      updateSummary();
+    }
+
+    function deleteItem(name) {
+      delete order[name];
+      updateSummary();
+    }
+
+    function applyDiscount(percent) {
+      discountPercent = percent;
+      updateSummary();
+    }
+
+    function clearDiscount() {
+      discountPercent = 0;
+      updateSummary();
+    }
+
     function updateSummary() {
       const summary = document.getElementById("orderSummary");
       const items = document.getElementById("orderItems");
       const total = document.getElementById("totalSummary");
-      items.innerHTML = "";
+      const discountBox = document.getElementById("discountDisplay");
 
+      items.innerHTML = "";
       let subtotal = 0;
+
       for (const name in order) {
         const item = order[name];
         subtotal += item.price * item.quantity;
@@ -187,22 +296,34 @@
         row.innerHTML = `
           <div>${name}</div>
           <div>
-            <button onclick="changeQty('${name}', -1)">-</button>
-            ${item.quantity}
-            <button onclick="changeQty('${name}', 1)">+</button>
+            <button onclick="changeQty('${name}', -1')">-</button>
+            <strong>${item.quantity}</strong>
+            <button onclick="changeQty('${name}', 1')">+</button>
             x ${item.price}฿
+            <button onclick="deleteItem('${name}')">🗑️</button>
           </div>
         `;
         items.appendChild(row);
       }
 
-      const discount = subtotal > 500 ? 50 : 0;
+      // ส่วนลด
+      discountBox.innerHTML = "";
+      if (discountPercent > 0) {
+        discountBox.innerHTML = `
+          <div class="discount-display">
+            ส่วนลดที่ใช้: ${discountPercent}% 
+            <button onclick="clearDiscount()">ลบ</button>
+          </div>
+        `;
+      }
+
+      const discount = subtotal * (discountPercent / 100);
       const vat = subtotal * 0.07;
       const net = subtotal - discount + vat;
 
       total.innerHTML = `
         ยอดรวม: ${subtotal.toFixed(2)} ฿<br>
-        ส่วนลด: ${discount} ฿<br>
+        ส่วนลด: -${discount.toFixed(2)} ฿<br>
         ภาษี (7%): ${vat.toFixed(2)} ฿<br>
         <strong>ราคาสุทธิ: ${net.toFixed(2)} ฿</strong>
       `;
@@ -210,24 +331,18 @@
       summary.style.display = "block";
     }
 
-    function changeQty(name, change) {
-      order[name].quantity += change;
-      if (order[name].quantity <= 0) {
-        delete order[name];
-      }
-      updateSummary();
-    }
-
     function submitOrder() {
       const duration = Math.floor((new Date() - startTime) / 1000);
       alert(`สั่งซื้อเรียบร้อย! ใช้เวลา: ${duration} วินาที`);
       order = {};
+      discountPercent = 0;
       updateSummary();
     }
 
     function cancelOrder() {
       if (confirm("ต้องการยกเลิกการสั่งซื้อใช่ไหม?")) {
         order = {};
+        discountPercent = 0;
         updateSummary();
       }
     }
@@ -240,7 +355,6 @@
       window.history.back();
     }
 
-    // นับเวลา 5 นาทีไม่ทำงานกลับหน้าแรก
     let inactivityTimer = setTimeout(goHome, 5 * 60 * 1000);
     document.body.addEventListener("click", () => {
       clearTimeout(inactivityTimer);
