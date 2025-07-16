@@ -220,14 +220,13 @@
       customerCountEl.innerText = "";
     }
 
-    function startOrder() {
-      if (customerCount === "") {
-        alert("กรุณากรอกจำนวนลูกค้า");
-        return;
-      }
-      popup.style.display = "none";
-      alert(`โต๊ะ ${selectedTable}, จำนวนลูกค้า: ${customerCount} → ไปหน้าเมนู`);
-      // window.location.href = "menu.html";
+          function startOrder() {
+          if (customerCount === "") {
+            alert("กรุณากรอกจำนวนลูกค้า");
+            return;
+          }
+          document.getElementById("popup").style.display = "none";
+          window.location.href = "Ordermenu.html";
     }
 
     function goHome() {
