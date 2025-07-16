@@ -1,0 +1,215 @@
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>เมนูอาหาร</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #FFA500, #FFFFFF);
+      color: #002366;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+    }
+
+    .btn-nav {
+      padding: 8px 16px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      background-color: #ffffffcc;
+      color: #002366;
+      cursor: pointer;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .menu-item {
+      background: #fff;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .image-placeholder {
+      width: 100%;
+      height: 100px;
+      background: #eee;
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .order-summary {
+      padding: 15px;
+      background-color: #ffffffcc;
+      margin: 0 20px 20px;
+      border-radius: 12px;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .order-item button {
+      margin: 0 5px;
+    }
+
+    .summary-total {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="btn-nav" onclick="goHome()">← Home</button>
+    <button class="btn-nav" onclick="goBack()">← Back</button>
+  </header>
+
+  <h1>เมนูอาหาร</h1>
+
+  <div class="menu-grid" id="menuGrid">กำลังโหลดเมนู...</div>
+
+  <div class="order-summary" id="orderSummary" style="display: none;">
+    <h3>รายการสั่งซื้อ</h3>
+    <div id="orderItems"></div>
+    <div class="summary-total" id="totalSummary"></div>
+    <button onclick="submitOrder()">ยืนยันคำสั่งซื้อ</button>
+    <button onclick="cancelOrder()">ยกเลิก</button>
+  </div>
+
+  <script>
+    let order = {};
+    let startTime = new Date();
+
+    fetch("https://script.google.com/macros/s/AKfycbwvYTBu1lZ-IukUtsg2ylzALbEEoYARxjgyWh7VmTDP9lTXhs6Axv7uNcRIE3DCGjaQ/exec")
+      .then(res => res.json())
+      .then(data => {
+        const grid = document.getElementById("menuGrid");
+        grid.innerHTML = "";
+        data.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "menu-item";
+          div.innerHTML = 
+            <div class="image-placeholder"></div>
+            <div>${item["name"]}</div>
+            <div>${item["price"]} บาท</div>
+          ;
+          div.onclick = () => addToOrder(item);
+          grid.appendChild(div);
+        });
+      });
+
+    function addToOrder(item) {
+      const name = item["name"];
+      const price = Number(item["price"]);
+      if (!order[name]) {
+        order[name] = { price, quantity: 1 };
+      } else {
+        order[name].quantity++;
+      }
+      updateSummary();
+    }
+
+    function updateSummary() {
+      const summary = document.getElementById("orderSummary");
+      const items = document.getElementById("orderItems");
+      const total = document.getElementById("totalSummary");
+      items.innerHTML = "";
+
+      let subtotal = 0;
+      for (const name in order) {
+        const item = order[name];
+        subtotal += item.price * item.quantity;
+
+        const row = document.createElement("div");
+        row.className = "order-item";
+        row.innerHTML = 
+          <div>${name}</div>
+          <div>
+            <button onclick="changeQty('${name}', -1)">-</button>
+            ${item.quantity}
+            <button onclick="changeQty('${name}', 1)">+</button>
+            x ${item.price}฿
+          </div>
+        ;
+        items.appendChild(row);
+      }
+
+      const discount = subtotal > 500 ? 50 : 0;
+      const vat = subtotal * 0.07;
+      const net = subtotal - discount + vat;
+
+      total.innerHTML = 
+        ยอดรวม: ${subtotal.toFixed(2)} ฿<br>
+        ส่วนลด: ${discount} ฿<br>
+        ภาษี (7%): ${vat.toFixed(2)} ฿<br>
+        <strong>ราคาสุทธิ: ${net.toFixed(2)} ฿</strong>
+      ;
+
+      summary.style.display = "block";
+    }
+
+    function changeQty(name, change) {
+      order[name].quantity += change;
+      if (order[name].quantity <= 0) {
+        delete order[name];
+      }
+      updateSummary();
+    }
+
+    function submitOrder() {
+      const duration = Math.floor((new Date() - startTime) / 1000);
+      alert(สั่งซื้อเรียบร้อย! ใช้เวลา: ${duration} วินาที);
+      order = {};
+      updateSummary();
+    }
+
+    function cancelOrder() {
+      if (confirm("ต้องการยกเลิกการสั่งซื้อใช่ไหม?")) {
+        order = {};
+        updateSummary();
+      }
+    }
+
+    function goHome() {
+      window.location.href = "index.html";
+    }
+
+    function goBack() {
+      window.history.back();
+    }
+
+    // จับเวลา 5 นาที
+    let inactivityTimer = setTimeout(goHome, 5 * 60 * 1000);
+    document.body.addEventListener("click", () => {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(goHome, 5 * 60 * 1000);
+    });
+  </script>
+</body>
+</html>
+ 
+
+
