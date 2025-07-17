@@ -218,6 +218,7 @@
       <button onclick="promptDiscountAuth()">🎁 ส่วนลด</button>
       <button onclick="submitOrder()">✅ ยืนยันคำสั่งซื้อ</button>
       <button onclick="cancelOrder()">❌ ยกเลิก</button>
+      <button onclick="removeDiscount()">🧹 ลบส่วนลด</button>
     </div>
 
     <div class="menu-grid" id="menuGrid">กำลังโหลดเมนู...</div>
@@ -357,9 +358,9 @@
         row.innerHTML = `
           <div>${name}</div>
           <div class="controls">
-            <button onclick="changeQty('${name}', -1')">-</button>
+            <button onclick="changeQty('${name}', -1)">-</button>
             <span>${item.quantity}</span>
-            <button onclick="changeQty('${name}', 1')">+</button>
+            <button onclick="changeQty('${name}', 1)">+</button>
             <button onclick="removeItem('${name}')">🗑️</button>
           </div>
         `;
@@ -379,14 +380,19 @@
 
       summary.style.display = "block";
     }
-
-    function changeQty(name, change) {
-      order[name].quantity += change;
-      if (order[name].quantity <= 0) {
-        delete order[name];
-      }
+    function removeDiscount() {
+      discountPercent = 0;
       updateSummary();
     }
+      function changeQty(name, change) {
+        if (order[name]) {
+          order[name].quantity += change;
+          if (order[name].quantity <= 0) {
+            delete order[name];
+          }
+          updateSummary();
+        }
+      }
 
     function removeItem(name) {
       delete order[name];
