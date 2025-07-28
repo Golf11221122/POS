@@ -92,6 +92,17 @@
     <button class="btn" onclick="login()">LOG IN</button>
   </div>
 
+  <!-- ✅ เพิ่มฟอร์มสมัครสมาชิกตามต้องการ -->
+  <div style="margin-top: 40px;">
+    <h2>สมัครสมาชิก</h2>
+    <input type="text" id="fname" placeholder="ชื่อ"><br><br>
+    <input type="text" id="lname" placeholder="นามสกุล"><br><br>
+    <input type="text" id="phone" placeholder="เบอร์โทร"><br><br>
+    <input type="text" id="address" placeholder="ที่อยู่"><br><br>
+    <button onclick="signup()">สมัครสมาชิก</button>
+  </div>
+
+  <!-- ✅ รวม script ทั้งหมดไว้ใน tag เดียว -->
   <script>
     let pin = "";
 
@@ -108,20 +119,65 @@
     }
 
     function login() {
+      if (pin.length < 4) {
+        alert("กรุณากรอกรหัสอย่างน้อย 4 หลัก");
+        return;
+      }
+
       fetch("https://script.google.com/macros/s/AKfycbzY9gDX-lBW8lg9nAS5XJ40beHLLMki9UcPe9QyLPlir7Zl1v1bAzgxzyWCIBFBSDNm/exec", {
         method: "POST",
-        mode: "no-cors",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ pin: pin })
       })
-      .then(() => {
-        // ✅ ไม่สามารถรู้ผลจาก server ได้ ให้เดาว่าถูก และไปหน้า menu
-        window.location.href = "menu.html";
+      .then(response => response.text())
+      .then(result => {
+        if (result.trim() === "OK") {
+          window.location.href = "menu.html";
+        } else {
+          alert("รหัสไม่ถูกต้อง");
+          clearPin();
+        }
       })
       .catch(err => {
-        alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+        alert("เชื่อมต่อผิดพลาด");
+        console.error(err);
+      });
+    }
+
+    function signup() {
+      const fname = document.getElementById("fname").value;
+      const lname = document.getElementById("lname").value;
+      const phone = document.getElementById("phone").value;
+      const address = document.getElementById("address").value;
+
+      if (!fname || !lname || !phone) {
+        alert("กรุณากรอกชื่อ นามสกุล และเบอร์โทร");
+        return;
+      }
+
+      fetch("https://script.google.com/macros/s/AKfycbzY9gDX-lBW8lg9nAS5XJ40beHLLMki9UcPe9QyLPlir7Zl1v1bAzgxzyWCIBFBSDNm/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fname: fname,
+          lname: lname,
+          phone: phone,
+          address: address
+        })
+      })
+      .then(r => r.text())
+      .then(result => {
+        if (result.startsWith("success|")) {
+          const code = result.split("|")[1];
+          alert("สมัครสำเร็จ รหัสของคุณคือ: " + code);
+        } else {
+          alert("สมัครไม่สำเร็จ: " + result);
+        }
+      })
+      .catch(err => {
+        alert("เกิดข้อผิดพลาด");
         console.error(err);
       });
     }
